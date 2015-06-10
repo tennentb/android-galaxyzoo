@@ -19,6 +19,7 @@
 
 package com.murrayc.galaxyzoo.app;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.BroadcastReceiver;
@@ -28,10 +29,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
@@ -42,6 +45,8 @@ import com.murrayc.galaxyzoo.app.provider.Item;
 import com.murrayc.galaxyzoo.app.provider.ItemsContentProvider;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * An activity showing a single subject. This
@@ -55,6 +60,18 @@ import java.lang.ref.WeakReference;
 public class ClassifyActivity extends ItemActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener,
             ClassifyFragment.Callbacks, QuestionFragment.Callbacks {
+    private static final String[] permissionsRequired = {
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.INTERNET,
+            Manifest.permission.ACCESS_NETWORK_STATE,
+            Manifest.permission.GET_ACCOUNTS,
+            Manifest.permission.USE_CREDENTIALS,
+            Manifest.permission.MANAGE_ACCOUNTS,
+            Manifest.permission.READ_SYNC_SETTINGS,
+            Manifest.permission.WRITE_SYNC_SETTINGS,
+            Manifest.permission.AUTHENTICATE_ACCOUNTS};
+    private static final int PERMISSION_REQUEST_CODE = 1;
     private boolean mIsStateAlreadySaved = false;
     private boolean mPendingClassificationFinished = false;
     private boolean mPendingWarnAboutNetworkProblemWithRetry = false;
@@ -193,8 +210,45 @@ public class ClassifyActivity extends ItemActivity
     //public static final String AUTHORITY = Item.AUTHORITY;
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSION_REQUEST_CODE
+                && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            Log.error("onRequestPermissionsResult(): failed.");
+        }
+    }
+
+    private void checkPermissions() {
+        //Check for all the permissions, because we need them all.
+        //TODO: Get the list of permissions from AndroidManifest.xml ?
+        final ArrayList<String> permissionsMissing = new ArrayList<>();
+        for (final String permission : permissionsRequired) {
+            if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+                permissionsMissing.add(permission);
+            }
+        }
+
+        if (!permissionsMissing.isEmpty()) {
+                final String[] array = new String[permissionsMissing.size()];
+                permissionsMissing.toArray(array);
+
+                //TODO: This offers a dialog saying "Allow the app to perform an unknown action",
+                //at least with the M Preview,
+                //which is obviously useless.
+                requestPermissions(array, PERMISSION_REQUEST_CODE);
+                Log.error("ClassifyActivity.checkPermissions(): checkSelfPermission() failed for permissions: " + permissionsMissing);
+                return;
+            }
+    }
+
+    @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        checkPermissions();
+
 
         if (TextUtils.isEmpty(getItemId())) {
             setItemId(ItemsContentProvider.URI_PART_ITEM_ID_NEXT);
