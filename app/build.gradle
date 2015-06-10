@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion '22.0.1'
+    compileSdkVersion 'android-MNC'
+    buildToolsVersion '23 rc2'
     defaultConfig {
-        minSdkVersion 11
-        targetSdkVersion 22
+        minSdkVersion 'MNC'
+        targetSdkVersion 'MNC'
         versionCode 48
         versionName '1.48'
     }
