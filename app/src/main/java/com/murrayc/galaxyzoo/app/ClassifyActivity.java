@@ -78,6 +78,7 @@ public class ClassifyActivity extends ItemActivity
 
     private AlertDialog mAlertDialog = null;
     private BroadcastReceiver mReceiverNetworkReconnection = null;
+    private boolean mHasSavedInstanceState = false;
 
 
 //    public class ItemsContentProviderObserver extends ContentObserver {
@@ -218,6 +219,8 @@ public class ClassifyActivity extends ItemActivity
                 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
             Log.error("onRequestPermissionsResult(): failed.");
         }
+
+        onCreateAfterPermissionsCheck(mHasSavedInstanceState);
     }
 
     private void checkPermissions() {
@@ -246,9 +249,6 @@ public class ClassifyActivity extends ItemActivity
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        checkPermissions();
-
 
         if (TextUtils.isEmpty(getItemId())) {
             setItemId(ItemsContentProvider.URI_PART_ITEM_ID_NEXT);
@@ -280,11 +280,18 @@ public class ClassifyActivity extends ItemActivity
         resolver.registerContentObserver(Item.ITEMS_URI, true, observer);
         */
 
-        //Make sure that the SyncAdapter starts to download items as soon as possible:
-        requestSync();
-
         //Our NetworkChangeReceiver should only wake up when necessary:
         stopListeningForNetworkReconnection();
+
+        //We delay most work until after the permission check/request has completed asynchronously.
+        //See onCreateAfterPermissionsCheck();
+        mHasSavedInstanceState = (savedInstanceState != null);
+        checkPermissions();
+    }
+
+    private void onCreateAfterPermissionsCheck(boolean hasSavedInstanceState) {
+        //Make sure that the SyncAdapter starts to download items as soon as possible:
+        requestSync();
 
         setContentView(R.layout.activity_classify);
 
@@ -299,7 +306,7 @@ public class ClassifyActivity extends ItemActivity
         //
         // http://developer.android.com/guide/components/fragments.html
         //
-        if (savedInstanceState == null) {
+        if (!hasSavedInstanceState && !mIsStateAlreadySaved) {
             final FragmentManager fragmentManager = getSupportFragmentManager();
             if (fragmentManager != null) {
                 //We check to see if the fragment exists already,
