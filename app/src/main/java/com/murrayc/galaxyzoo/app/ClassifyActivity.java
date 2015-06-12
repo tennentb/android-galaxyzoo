@@ -231,16 +231,16 @@ public class ClassifyActivity extends ItemActivity
         }
 
         if (!permissionsMissing.isEmpty()) {
-                final String[] array = new String[permissionsMissing.size()];
-                permissionsMissing.toArray(array);
+            final String[] array = new String[permissionsMissing.size()];
+            permissionsMissing.toArray(array);
 
-                //TODO: This offers a dialog saying "Allow the app to perform an unknown action",
-                //at least with the M Preview,
-                //which is obviously useless.
-                requestPermissions(array, PERMISSION_REQUEST_CODE);
-                Log.error("ClassifyActivity.checkPermissions(): checkSelfPermission() failed for permissions: " + permissionsMissing);
-                return;
-            }
+            //TODO: This offers a dialog saying "Allow the app to perform an unknown action",
+            //at least with the M Preview,
+            //which is obviously useless.
+            requestPermissions(array, PERMISSION_REQUEST_CODE);
+            Log.error("ClassifyActivity.checkPermissions(): checkSelfPermission() failed for permissions: " + permissionsMissing);
+            return;
+        }
     }
 
     @Override
