@@ -3,6 +3,8 @@
 
     <!-- The name of the app -->
     <string name="app_name">Galaxy Zoo</string>
+    <string name="app_pkg_name">com.murrayc.galaxyzoo.app</string>
+
 
     <!-- The description of the app. This text is split into separate strings
     to make life easier for translators. -->
